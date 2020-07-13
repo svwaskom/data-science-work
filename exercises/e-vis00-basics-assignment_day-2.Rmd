@@ -1,0 +1,93 @@
+---
+title: "Data Visualization Basics"
+author: Zach del Rosario
+date: 2020-05-03
+output: github_document
+time: 10
+reading: 30
+---
+
+*Purpose*: The most powerful way for us to learn about a dataset is to
+_visualize the data_. Throughout this class we will make extensive use of the
+_grammar of graphics_, a powerful graphical programming _grammar_ that will
+allow us to create just about any graph you can imagine!
+
+*Reading*: [Data Visualization Basics](https://rstudio.cloud/learn/primers/1.1). *Note*: In RStudio use `Ctrl + Click` (Mac `Command + Click`) to follow the link.
+*Topics*: `Welcome`, `A code template`, `Aesthetic mappings`.
+*Reading Time*: ~ 30 minutes
+
+
+```{r setup, include=FALSE}
+# knitr options
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+__q1__ Load the `tidyverse` and inspect the `diamonds` dataset. What do the
+`cut`, `color`, and `clarity` variables mean?
+
+*Hint*: We learned how to inspect a dataset in `e-data-00-basics`!
+
+```{r library}
+library(tidyverse)
+?diamonds
+```
+<!-- answer-begin -->
+the variables mean:
+  
+  - `cut`: quality of the cut (`Fair`, `Good`, `Very Good`, `Premium`, `Ideal`)
+  - `color`: diamond color, from `D` (best) to `J` (worst)
+  - `clarity`: a measurement of how clear the diamond is(`l1` (worst), `Sl2`, `Sl1`, `VS2`, `VS1`, `VVS2`, `VVS1`, `lF` (best))
+  
+<!-- answer-end -->
+
+__q2__ Use your "standard checks" to determine what variables the dataset has.
+
+```{r}
+glimpse(diamonds)
+summary(diamonds)
+```
+<!-- answer-begin -->
+`diamonds` has variables `carat`, `cut`, `color`, `clarity`, `depth`, `table`, `price`, `x`, `y`, and `z`.
+
+<!-- answer-end -->
+
+Now that we have the list of variables in the dataset, we know what we can visualize!
+
+__q3__ Using `ggplot`, visualize `price` vs `carat` with points. What trend do
+you observe?
+
+*Hint*: Usually the language `y` vs `x` refers to the `vertical axis` vs
+`horizontal axis`. This is the opposite order from the way we often specify `x,
+y` pairs. Language is hard!
+
+```{r q3-task}
+## TODO: Complete this code
+ggplot(diamonds) + 
+  geom_point(mapping = aes(x = carat, y = price))
+
+```
+**Observations**:
+
+- `price` increases with `carat` increase.
+- The range of `price` also increases with `carat` increase (meaning, the `price`s for low-`carat` diamonds are more similar to each other than the `price`s for  high-`carat` diamonds).
+
+__q4__ Create a new graph to visualize `price`, `carat`, and `cut`
+simultaneously.
+
+*Hint*: Remember that you can add additional aesthetic mappings in `aes()`. Some options include `size`, `color`, and `shape`.
+
+```{r q4-task}
+## TODO: Complete this code
+ggplot(diamonds) +
+  geom_point(mapping = aes(x = carat, y = price, color = cut))
+```
+
+**Observations**:
+
+- `price` tends to  increase with higher-quality `cut`s: `Ideal` `cut` tends to be more expensive, while `Fair` `cut` tends to be less expensive.
+
+<!-- include-exit-ticket -->
+# Exit Ticket
+<!-- -------------------------------------------------- -->
+
+Once you have completed this exercise, make sure to fill out the **exit ticket survey**, [linked here](https://docs.google.com/forms/d/e/1FAIpQLSeuq2LFIwWcm05e8-JU84A3irdEL7JkXhMq5Xtoalib36LFHw/viewform?usp=pp_url&entry.693978880=e-vis00-basics-assignment.Rmd).
