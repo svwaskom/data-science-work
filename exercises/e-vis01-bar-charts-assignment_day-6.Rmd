@@ -1,0 +1,170 @@
+---
+title: "Visualization: Bar Charts"
+author: Zach del Rosario
+date: 2020-05-13
+output: github_document
+time: 30
+reading: 30
+---
+
+*Purpose*: *Bar charts* are a key tool for EDA. In this exercise, we'll learn
+how to construct a variety of different bar charts, as well as when---and when
+*not*---to use various charts.
+
+*Reading*: [Bar Charts](https://rstudio.cloud/learn/primers/3.2)
+*Topics*: (All topics)
+*Reading Time*: ~30 minutes
+
+```{r setup, include=FALSE}
+# knitr options
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r library}
+library(tidyverse)
+
+```
+
+__q1__ In the reading, you learned the relation between `geom_bar()` and
+`geom_col()`. Use that knowledge to convert the following `geom_bar()` plot into
+the same visual using `geom_col()`.
+
+```{r q1-task}
+mpg %>%
+  ggplot(aes(trans)) +
+  geom_bar()
+
+#my changes 
+mpg %>% 
+  count(trans) %>% 
+  ggplot() +
+  geom_col(mapping = aes(x = trans, y = n))
+```
+
+The reading mentioned that when using `geom_col()` our x-y data should be
+`1-to-1`. This next exercise will probe what happens when our data are not
+`1-to-1`, and yet we use a `geom_col()`. Note that a
+[one-to-one](https://en.wikipedia.org/wiki/Injective_function) function is one
+where each input leads to a single output. For the `mpg` dataset, we can see
+that the pairs `cty, hwy` clearly don't have this one-to-one property:
+
+```{r mpg-not-1-to-1}
+## NOTE: Run this chunk for an illustration
+mpg %>% filter(cty == 20)
+```
+
+__q2__ The following code attempts to visualize `cty, hwy` from `mpg` using
+`geom_col()`. There's something fishy about the `hwy` values; what's wrong here?
+
+*Hint*: Try changing the `position` parameter for `geom_col()`.
+
+```{r q2-task}
+mpg %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = cty, y = hwy))
+
+mpg %>%
+  ggplot() +
+  geom_col(mapping = aes(x = cty, y = hwy, fill = cty), position = "dodge")
+
+mpg %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x = cty, y = hwy, fill = hwy), position = "stack")
+```
+
+**Observations**:
+- Even without changing position, the original chart looks like `hwy` speeds go close to 700 mph, which is not reasonable!  I suspect it's multiple values of `hwy` being added on top of each other.
+- Adding `position = "dodge"` shows more reasonable values of `hwy`, going up close to 50 mph.  I added color, too, to help me see where the `cty` values were the same, although since `cty` is a continuous variable it didn't help as much as I'd hoped--the gradient is hard to interpret.  Still, at least the values of `hwy` are now visible.
+- Changing back to `position = "stack"` and `fill`ing by `hwy` gave me a clear image that, when stacked, it is indeed adding those multiple `hwy` speeds together when they have the same `cty` speed.  So those 600 mph columns are really just multiple cases of <50 mph values being stacked on top!
+
+A more standard way to visualize this kind of data is a *scatterplot*, which
+we'll study later. For now, here's an example of a more effective way to
+visualize `cty` vs `hwy`:
+
+```{r q2-compare}
+## NOTE: Run this chunk for an illustration
+mpg %>%
+  ggplot(aes(cty, hwy)) +
+  geom_point()
+```
+
+__q3__ The following are two different visualizations of the `mpg` dataset.
+Document your observations between the `v1` and `v2` visuals. Then, determine
+which---`v1` or `v2`---enabled you to make more observations. What was the
+difference between the two visuals?
+
+```{r q4-v1}
+## TODO: Run this code without changing, describe your observations on the data
+mpg %>%
+  ggplot(aes(class, fill = class)) +
+  geom_bar()
+```
+
+**Observations**:
+- Here I can see how many cars in the `mpg` dataset belong to each `class` of car.  There are more `suv`s (>60) than any other class, and fewer `2seater`s (~ 4 - 5?) than any other class.
+
+```{r q4-v2}
+## TODO: Run this code without changing, describe your observations on the data
+mpg %>%
+  ggplot(aes(class, fill = drv)) +
+  geom_bar()
+```
+
+**Observations**:
+- This now allows me to see everything I observed in the first graph, *plus* the ability to distinguish how many of each class have each kind of `drv`.
+- For example, the `suv`s in `mpg` are mostly (like, 80% ish mostly) 4-wheel drive, and the rest are rear-wheel drive -- there aren't any in `mpg` that are front-wheel drive.
+- `2seater`s in `mpg` are only rear-wheel drive, and `mpg`'s `pickup`s are only 4-wheel drive.
+
+**Compare `v1` and `v2`**:
+
+- Which visualization---`v1` or `v2`---enabled you to make more observations?
+- `v2` allowed me to make more observations.
+- What was the difference between `v1` and `v2`?
+- `v2` added a `fill` based on `drv`, which allowed me to see a stacked bar chart of the `drv` values for each `class` of car in `mpg`.  `v1` on the other hand used the `fill` aesthetic on `class`, which was already distinguished by `x`.
+
+__q4__ The following code has a bug; it does not do what its author intended.
+Identify and fix the bug. What does the resulting graph tell you about the
+relation between `manufacturer` and `class` of cars in this dataset?
+
+*Note*: I use a `theme()` call to rotate the x-axis labels. We'll learn how to
+do this in a future exercise.
+
+```{r q4-task}
+mpg %>%
+  ggplot(aes(x = manufacturer, fill = class), position = "dodge") +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 270, vjust = 0.5, hjust = 0))
+
+# my version
+mpg %>%
+  ggplot() +
+  geom_bar(aes(x = manufacturer, fill = class), position = "dodge") +
+  theme(axis.text.x = element_text(angle = 270, vjust = 0.5, hjust = 0))
+```
+
+**Observations**
+- The bug was that it wasn't following the `"dodge"` position, which apparently can only be set in the `geom`, not in the `ggplot()` function.
+- When moved so that `dodge` was respected, it shows that most `manufacturer`s make a limited number of `class`es of cars that are included in `mpg`.  `jeep`, `land rover`, `lincoln`, and `mercury` only have `SUV`s in this dataset, while `honda` only has `subcompact`s and `pontiac` only has `midsize`.
+
+__q5__ The following graph is hard to read. What other form of faceting would
+make the visual more convenient to read? Modify the code below with your
+suggested improvement.
+
+```{r q5-task}
+mpg %>%
+  ggplot(aes(x = cyl)) +
+  geom_bar() +
+  facet_grid(~ manufacturer)
+
+# my version
+mpg %>%
+  ggplot(aes(x = cyl)) +
+  geom_bar() +
+  facet_wrap(~ manufacturer)
+```
+
+<!-- include-exit-ticket -->
+# Exit Ticket
+<!-- -------------------------------------------------- -->
+
+Once you have completed this exercise, make sure to fill out the **exit ticket survey**, [linked here](https://docs.google.com/forms/d/e/1FAIpQLSeuq2LFIwWcm05e8-JU84A3irdEL7JkXhMq5Xtoalib36LFHw/viewform?usp=pp_url&entry.693978880=e-vis01-bar-charts-assignment.Rmd).
